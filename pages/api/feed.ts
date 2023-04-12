@@ -10,10 +10,11 @@ const feedEndpoint = async (req: NextApiRequest, res: NextApiResponse<RespostaPa
         if(req.method === 'GET'){
             console.log(req.method);
             // Receber uma Id do usuario
-            if(req?.query?.id){
-                console.log(req.query.id);
+            
+            console.log(req?.query);
+            if(req?.query?.userId){
                 // Validacao do usuario
-                const usuario = await UsuarioModel.findById(req?.query?.id);
+                const usuario = await UsuarioModel.findById(req?.query?.userId);                
                 if(!usuario){
                     return res.status(400).json({erro: 'Usuario nao encontrado'});
                 }
@@ -22,6 +23,8 @@ const feedEndpoint = async (req: NextApiRequest, res: NextApiResponse<RespostaPa
                 const publicacoes = await PublicacaoModel
                     .find({idUsuario : usuario._id})
                     .sort({data : -1});
+
+                    console.log(publicacoes);
 
                 return res.status(200).json(publicacoes);
             }else{

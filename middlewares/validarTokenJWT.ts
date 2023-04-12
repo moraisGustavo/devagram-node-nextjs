@@ -37,7 +37,7 @@ export const validarTokenJWT = (handler : NextApiHandler) =>
             }
 
             
-            if(req.query){          //Verifica se tem uma query na requisiçao
+            if(!req.query){          //Verifica se tem uma query na requisiçao
                 req.query = {};     // Caso nao tenha , cria uma vazia
             }
             
