@@ -8,10 +8,8 @@ import { PublicacaoModel } from '@/models/PublicacaoModel';
 const feedEndpoint = async (req: NextApiRequest, res: NextApiResponse<RespostaPadraoMsg | any>) => {
     try{
         if(req.method === 'GET'){
-            console.log(req.method);
             // Receber uma Id do usuario
             
-            console.log(req?.query);
             if(req?.query?.userId){
                 // Validacao do usuario
                 const usuario = await UsuarioModel.findById(req?.query?.userId);                
@@ -23,9 +21,6 @@ const feedEndpoint = async (req: NextApiRequest, res: NextApiResponse<RespostaPa
                 const publicacoes = await PublicacaoModel
                     .find({idUsuario : usuario._id})
                     .sort({data : -1});
-
-                    console.log(publicacoes);
-
                 return res.status(200).json(publicacoes);
             }else{
                 const {userId} = req.query;

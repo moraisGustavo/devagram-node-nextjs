@@ -16,7 +16,6 @@ const handler = nc()
 
                 const {userId} = req.query;
                 const usuario = await UsuarioModel.findById(userId);
-                console.log(usuario, userId);
                 if(!usuario){
                     return res.status(400).json({ erro: 'Usuario nao encontrado' });
                 }
