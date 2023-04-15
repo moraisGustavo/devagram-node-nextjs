@@ -4,15 +4,16 @@ import {validarTokenJWT } from '../../middlewares/validarTokenJWT';
 import { conectarMongoDB } from '../../middlewares/conectarMongoDB';
 import { UsuarioModel } from '@/models/UsuarioModel';
 import { PublicacaoModel } from '@/models/PublicacaoModel';
+import { SeguidorModel } from '@/models/SeguidorModel';
 
 const feedEndpoint = async (req: NextApiRequest, res: NextApiResponse<RespostaPadraoMsg | any>) => {
     try{
         if(req.method === 'GET'){
             // Receber uma Id do usuario
             
-            if(req?.query?.userId){
+            if(req?.query?.id){
                 // Validacao do usuario
-                const usuario = await UsuarioModel.findById(req?.query?.userId);                
+                const usuario = await UsuarioModel.findById(req?.query?.id);                
                 if(!usuario){
                     return res.status(400).json({erro: 'Usuario nao encontrado'});
                 }
@@ -23,13 +24,41 @@ const feedEndpoint = async (req: NextApiRequest, res: NextApiResponse<RespostaPa
                     .sort({data : -1});
                 return res.status(200).json(publicacoes);
             }else{
+                //validaçao do ususario logado
                 const {userId} = req.query;
                 const usuarioLogado = await UsuarioModel.findById(userId);
                 if(!usuarioLogado){
                     return res.status(400).json({erro: 'Usuario nao encontrado'});
                 }
-            }
-        }
+
+                //Buscar os Seguidores
+                const seguidores = await SeguidorModel.find({usuarioId : usuarioLogado._id})
+                const seguidoresIds = seguidores.map(s => s.usuarioSeguidoId)
+
+                //Buscar as publicaçoes
+                const publicacoes = await PublicacaoModel.find({
+                    $or : [
+                        {idUsuario : usuarioLogado._id},
+                        {idUsuario : seguidoresIds}
+                    ]
+                })
+                .sort({data : -1});
+
+                //Trazendo o Nome eo Avatar
+                const result = [];
+                for (const publicacao of publicacoes) {
+                    const usuarioDaPublicacao = await UsuarioModel.findById(publicacao.idUsuario);
+                    if(usuarioDaPublicacao){
+                        const final = {...publicacao._doc, usuario : {
+                            nome : usuarioDaPublicacao.nome,
+                            avatar : usuarioDaPublicacao.avatar
+                        }};
+                        result.push(final);
+                    };
+                };
+                return res.status(200).json(result);
+            };
+        };
         return res.status(405).json({erro: 'Metodo informado invalido'});
     }catch(e){
         console.log(e);
